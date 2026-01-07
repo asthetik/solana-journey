@@ -20,3 +20,14 @@ This is a **learning-in-public** repository.
 The code and notes may be imperfect, but they reflect real progress.
 
 ---
+
+## 📂 Repository Structure
+
+```text
+.
+├── notes/          # Learning notes & explanations
+│   ├── weekly/     # Weekly summaries & reflections
+│   └── ...
+├── jobs.md 		# Job Search Compilation
+```
+
