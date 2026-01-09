@@ -25,9 +25,11 @@ The code and notes may be imperfect, but they reflect real progress.
 
 ```text
 .
-├── notes/          # Learning notes & explanations
-│   ├── weekly/     # Weekly summaries & reflections
+├── notes/          		# Learning notes & explanations
+│   ├── weekly/     		# Weekly summaries & reflections
 │   └── ...
-├── jobs.md 		# Job Search Compilation
+├── daily_record.md 		# Daily study diary
+├── jobs.md 				# Job search compilation
+├── learning_materials.md	# Learning materials
 ```
 
