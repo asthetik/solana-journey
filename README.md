@@ -31,5 +31,6 @@ The code and notes may be imperfect, but they reflect real progress.
 ├── daily_record.md 		# Daily study diary
 ├── jobs.md 				# Job search compilation
 ├── learning_materials.md	# Learning materials
+├── Q&A.md					# Questions and Answers
 ```
 
