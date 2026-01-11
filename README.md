@@ -25,12 +25,14 @@ The code and notes may be imperfect, but they reflect real progress.
 
 ```text
 .
-├── notes/          		# Learning notes & explanations
-│   ├── weekly/     		# Weekly summaries & reflections
-│   └── ...
-├── daily_record.md 		# Daily study diary
-├── jobs.md 				# Job search compilation
-├── learning_materials.md	# Learning materials
-├── Q&A.md					# Questions and Answers
+├── notes/                  # Core learning notes directory
+│   ├── blockchain.md       # Blockchain fundamentals
+│   ├── notes.md            # System theory notes
+│   └── solana.md           # Solana-specific learning
+├── daily_record.md         # Daily study diary
+├── jobs.md                 # Web3 job search resources
+├── learning_materials.md   # Learning materials & resources
+├── Q&A.md                  # Questions and Answers
+└── README.md               # Project introduction
 ```
 
