@@ -737,7 +737,7 @@ pub struct CompiledInstruction {
 
 
 
-## 交易费用
+## 交易费用 (Transaction Fees)
 
 每笔 Solana 交易都需要支付交易费用，以 SOL 结算。交易费用分为两部分：基础费用和优先费用。基础费用用于补偿验证者处理交易的成本。优先费用是可选费用，用于增加当前领导者处理您交易的可能性。
 
