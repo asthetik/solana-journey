@@ -734,3 +734,220 @@ pub struct CompiledInstruction {
 ```
 
 ![指令的紧凑数组](../images/compact_array_of_ixs.png)
+
+
+
+## 交易费用
+
+每笔 Solana 交易都需要支付交易费用，以 SOL 结算。交易费用分为两部分：基础费用和优先费用。基础费用用于补偿验证者处理交易的成本。优先费用是可选费用，用于增加当前领导者处理您交易的可能性。
+
+### 基础费用
+
+每笔交易的每个包含的签名费用为 5000 `lamports`。此费用由交易的第一个签名者支付。只有由 System Program 拥有的账户才能支付交易费用。基础费用的分配如下：
+
+- **50% 销毁：** 一半费用被 **销毁**（从流通的 SOL 供应中移除）。
+- **50% 分配：** 另一半费用被 **支付给处理交易的验证者**。
+
+### 优先费用
+
+优先费用 是一种可选费用，用于增加当前领导者（验证者）处理您交易的可能性。验证者会收到 100% 的优先费用。可以通过调整交易的 计算单元（CU）价格和 CU 限制来设置优先费用。（请参阅 如何使用优先费用指南 以了解有关优先费用的更多详细信息。）
+
+优先费用的计算方式如下：
+
+```tex
+Prioritization fee = CU limit * CU price
+```
+
+
+优先费用用于确定您的 交易优先级，相对于其他交易。其计算公式如下：
+
+```tex
+Priority = (Prioritization fee + Base fee) / (1 + CU limit + Signature CUs + Write lock CUs)
+```
+
+#### 计算单元限制
+
+默认情况下， 每条指令 分配 200,000 个 CU，每笔交易分配 140 万个 CU。您可以通过在交易中包含一个SetComputeUnitLimit 指令来更改这些默认值。
+
+要计算交易的适当 CU 限制，我们建议按照以下步骤进行：
+
+1. 通过模拟交易来估算所需的 CU 单位
+
+2. 在此估算值上增加 10% 的安全余量
+
+> [!WARNING]
+>
+> 优先费用是由请求的计算单元（CU）限制交易决定的，而不是实际使用的计算单元数量。如果您设置的计算单元限制过高或使用默认值，可能会为未使用的计算单元支付费用。
+
+#### 计算单元价格
+
+计算单元价格是为每个请求的 CU 支付的可选微 lamports金额。您可以将 CU 价格视为一种小费，用于鼓励 validator 优先处理您的交易。要设置 CU 价格，请在交易中包含一个 `SetComputeUnitPrice` 指令。
+
+
+
+## 程序 (program)
+
+在 Solana 上，智能合约被称为 program。program 是一种无状态的 账户，其中包含可执行代码。这些代码被组织为称为 instruction 的函数。用户通过发送包含一个或多个 instruction 的 交易 与 program 进行交互。一次交易可以包含来自多个 program 的 instruction。
+
+当程序被部署时，Solana 使用 LLVM 将其编译为可执行和链接格式 (ELF)。ELF 文件包含以 Solana 字节码格式（sBPF）编写的程序二进制文件，并存储在链上的可执行账户中。
+
+> [!NOTE]
+>
+> sBPF 是 Solana 定制的 [eBPF](https://en.wikipedia.org/wiki/EBPF) 字节码版本。
+
+### 编写程序
+
+大多数程序使用 Rust 编写，常见的开发方法有两种：
+
+- [Anchor](https://www.anchor-lang.com/docs)：Anchor 是一个为快速和简单的 Solana 开发设计的框架。它使用 **Rust 宏** 来减少样板代码，非常适合初学者。
+- 原生 Rust：直接使用 Rust 编写程序，不依赖任何框架。这种方法提供了更多的灵活性，但也增加了复杂性。
+
+### 更新程序
+
+要修改现有程序，必须将一个账户指定为**升级权限**。（通常是最初部署程序的同一个账户。）如果升级权限被撤销并设置为 `None`，则该程序将无法再被更新。
+
+### 验证程序
+
+Solana 支持[可验证构建](https://solana.com/docs/programs/verified-builds)，允许用户检查程序的链上代码是否与其公开的源代码匹配。Anchor 框架提供了[内置支持](https://www.anchor-lang.com/docs/verifiable-builds)来创建可验证构建。
+
+要检查现有程序是否已验证，可以在 [Solana Explorer](https://explorer.solana.com/address/PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY)上搜索其程序 ID。或者，您可以使用 Ellipsis Labs 的 [Solana Verifiable Build CLI](https://github.com/Ellipsis-Labs/solana-verifiable-build) 独立验证链上程序。
+
+### 内置程序
+
+#### System Program
+
+System Program 是唯一可以创建新账户的账户。默认情况下，所有新账户都归 System Program 所有，尽管许多账户在创建时会被分配给新的所有者。System Program 执行以下关键功能：
+
+| 功能           | 描述                                                         |
+| -------------- | ------------------------------------------------------------ |
+| 新账户创建     | 只有 System Program 可以创建新账户。                         |
+| 空间分配       | 设置每个账户数据字段的字节容量。                             |
+| 分配程序所有权 | 一旦 System Program 创建了一个账户，它可以将指定的程序所有者重新分配给另一个程序账户。这就是自定义程序如何接管由 System Program 创建的新账户的所有权。 |
+| 转移 SOL       | 将 lamports（SOL）从 System Accounts 转移到其他账户。        |
+
+System Program 的地址是 `11111111111111111111111111111111`。
+
+### 加载器程序
+
+每个程序都由另一个程序（其加载器）拥有。加载器用于部署、重新部署、升级或关闭程序。它们还用于完成程序并转移程序权限
+
+> [!NOTE]
+>
+> 加载器程序有时被称为“BPF 加载器”。
+
+| 加载器 | 程序 ID                                       | 备注                                                         | 指令链接                                                     |
+| ------ | --------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| native | `NativeLoader1111111111111111111111111111111` | 拥有其他四个加载器                                           | —                                                            |
+| v1     | `BPFLoader1111111111111111111111111111111111` | 管理指令已禁用，但程序仍然执行                               | —                                                            |
+| v2     | `BPFLoader2111111111111111111111111111111111` | 管理指令已禁用，但程序仍然执行                               | [指令](https://docs.rs/solana-loader-v2-interface/latest/solana_loader_v2_interface/enum.LoaderInstruction.html) |
+| v3     | `BPFLoaderUpgradeab1e11111111111111111111111` | 程序部署后可以更新。程序可执行文件存储在一个单独的程序数据账户中 | [指令](https://docs.rs/solana-loader-v3-interface/latest/solana_loader_v3_interface/instruction/enum.UpgradeableLoaderInstruction.html) |
+| v4     | `LoaderV411111111111111111111111111111111111` | 开发中（未发布）                                             | [指令](https://docs.rs/solana-loader-v4-interface/latest/solana_loader_v4_interface/instruction/enum.LoaderV4Instruction.html) |
+
+使用 loader-v3 或 loader-v4 部署的程序在部署后可能是可修改的，这取决于其升级权限。
+
+> [!NOTE]
+>
+> 当部署新程序时，默认会使用最新的加载器版本。
+
+### 预编译程序
+
+除了加载器程序，Solana 还提供以下预编译程序。
+
+#### 验证 ed25519 签名
+
+ed25519 程序用于验证一个或多个 ed25519 签名。
+
+| 程序         | 程序 ID                                       | 描述                                                  | 指令                                                         |
+| ------------ | --------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
+| Ed25519 程序 | `Ed25519SigVerify111111111111111111111111111` | 验证 ed25519 签名。如果任何签名验证失败，将返回错误。 | [指令](https://docs.rs/solana-ed25519-program/latest/solana_ed25519_program/index.html) |
+
+#### 验证 secp256k1 恢复
+
+secp256k1 程序用于验证 secp256k1 公钥恢复操作。
+
+| 程序           | 程序 ID                                       | 描述                                       | 指令                                                         |
+| -------------- | --------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| Secp256k1 程序 | `KeccakSecp256k11111111111111111111111111111` | 验证 secp256k1 公钥恢复操作（ecrecover）。 | [指令](https://docs.rs/solana-secp256k1-program/latest/solana_secp256k1_program/index.html) |
+
+### 核心程序
+
+以下列表中的程序提供了网络的核心功能。
+
+| 程序                     | 程序 ID                                       | 描述                                                         | 指令链接                                                     |
+| ------------------------ | --------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **System**               | `11111111111111111111111111111111`            | 创建新账户、分配账户数据、将账户分配给拥有程序、从 System Program 拥有的账户转移 lamports，并支付交易费用 | [SystemInstruction](https://docs.rs/solana-program/latest/solana_program/system_instruction/enum.SystemInstruction.html) |
+| **Vote**                 | `Vote111111111111111111111111111111111111111` | 创建和管理跟踪验证者投票状态和奖励的账户                     | [VoteInstruction](https://docs.rs/solana-vote-program/latest/solana_vote_program/vote_instruction/enum.VoteInstruction.html) |
+| **Stake**                | `Stake11111111111111111111111111111111111111` | 创建和管理代表委托给验证者的权益和奖励的账户                 | [StakeInstruction](https://docs.rs/solana-sdk/latest/solana_sdk/stake/instruction/enum.StakeInstruction.html) |
+| **Config**               | `Config1111111111111111111111111111111111111` | 将配置数据添加到链中，后跟允许修改它的公钥列表。与其他程序不同，Config 程序未定义任何单独的指令。它只有一个隐式指令：“存储”。其指令数据是一组控制访问账户和存储在其中数据的密钥。 | [ConfigInstruction](https://docs.rs/solana-config-program/latest/solana_config_program/config_instruction/index.html) |
+| **Compute Budget**       | `ComputeBudget111111111111111111111111111111` | 设置交易的计算单元限制和价格，允许用户控制计算资源和优先级费用 | [ComputeBudgetInstruction](https://docs.rs/solana-compute-budget-interface/latest/solana_compute_budget_interface/enum.ComputeBudgetInstruction.html) |
+| **Address Lookup Table** | `AddressLookupTab1e1111111111111111111111111` | 管理地址查找表，允许交易引用比交易账户列表中通常能容纳的更多账户 | [ProgramInstruction](https://docs.rs/solana-sdk/latest/solana_sdk/address_lookup_table/instruction/enum.ProgramInstruction.html) |
+| **ZK ElGamal Proof**     | `ZkE1Gama1Proof11111111111111111111111111111` | 提供对 ElGamal 加密数据的零知识证明验证                      | —                                                            |
+
+
+
+## 程序派生地址
+
+在 Solana 中，**派生地址（Program Derived Address，简称 PDA）** 是一种特殊的账户地址，它是通过特定的算法计算出来的，而不是由私钥生成的。
+
+简单来说，PDA 就像是程序（智能合约）的**专属保险柜**，只有该程序才有权对其进行签名和操作。
+
+Solana 的 **账户地址** 指向区块链上账户的位置。许多账户地址是 keypair 的公钥，在这种情况下，相应的私钥用于签署涉及该账户的交易。
+
+公钥地址的一个有用替代方案是程序派生地址 (PDA)。PDA 提供了一种简单的方法来存储、映射和获取程序状态。PDA 是使用程序 ID 和一组可选的预定义输入确定性创建的地址。PDA 看起来与公钥地址类似，但没有对应的私钥。
+
+Solana 运行时允许程序为 PDA 签名而无需私钥。使用 PDA 消除了跟踪账户地址的需要。并且你可以“回忆/复用当初用于推导的输入”，而不是“记住地址本身”。（要了解程序如何使用 PDA 进行签名，请参阅[跨程序调用](https://solana.com/docs/core/cpi)部分。）
+
+### PDA 的核心特征
+
+- **没有私钥**：PDA 地址在 Ed25519 椭圆曲线上没有对应的私钥，因此任何外部用户都无法直接伪造 PDA 的签名来动用其中的资金。
+- **程序控制**：只有创建该 PDA 的程序可以通过 `cross-program invocation` (CPI) 来“签署”涉及该 PDA 的指令。
+- **确定性**：给定相同的种子（Seeds）和程序 ID，计算出的 PDA 地址永远是同一个。
+
+### PDA 是如何计算的？
+
+PDA 的生成公式通常如下：
+
+```math
+PDA = hash(seeds, bump, program\_id)
+```
+
+- **Seeds (种子)**：开发者自定义的字符串或公钥（例如 `"user_vault"` 或用户自己的钱包地址）。
+- **Program ID**：所属程序的地址。
+- **Bump (增量值)**：一个 1 字节的数字（通常从 255 开始往下找），用于确保生成的哈希值落在椭圆曲线之外（即确保它没有私钥）。
+
+
+
+## Cross Program Invocation
+
+当一个 Solana 程序直接调用另一个程序的指令时，就会发生跨程序调用 (CPI)。这使得程序具有可组合性。如果将 Solana 的指令视为程序向网络公开的 API 端点，那么 CPI 就像一个端点在内部调用另一个端点。
+
+在进行 CPI 时，程序可以代表从其程序 ID 派生的 PDA 进行签名。这些签名者权限从调用程序扩展到被调用程序。
+
+![跨程序调用示例](../images/cpi.svg)
+
+在进行跨程序调用（CPI）时，账户权限会沿着调用链进行传递。若程序 A 接收到的原始指令包含签名（Signer）或可写（Writable）权限，当其对程序 B 发起 CPI 时，程序 B 将**完整继承**这些权限。这意味着程序 B 同样拥有对这些账户的签名权与写入权。这种权限传递在 CPI 链路中最多支持 4 层嵌套。
+
+> [!NOTE]
+>
+> 程序指令调用的最大堆栈高度称为 `max_instruction_stack_depth` ，并被设置为 MAX_INSTRUCTION_STACK_DEPTH 常量的值 5。
+>
+> 堆栈高度从初始交易的 1 开始，每当一个程序调用另一个指令时增加 1，从而将 CPI 的调用深度限制为 4。
+
+### 带有 PDA 签名者的 CPI
+
+当 CPI 需要 PDA 签名者时，会使用 invoke_signed 函数。它接收用于派生签名者 PDA 的 签名种子。Solana 运行时会在内部调用 create_program_address ，并传入 signers_seeds 以及调用程序的 program_id。当 PDA 被验证后， 会被添加为有效签名者。
+
+```rust
+pub fn invoke_signed(
+    instruction: &Instruction,
+    account_infos: &[AccountInfo],
+    signers_seeds: &[&[&[u8]]],
+) -> ProgramResult {
+    // --snip--
+    invoke_signed_unchecked(instruction, account_infos, signers_seeds)
+}
+```
+
+### 无 PDA 签名者的 CPI
+
+当 CPI 不需要 PDA 签名者时，会使用 invoke 函数。invoke 函数会调用 invoke_signed 函数，并传递一个空的 signers_seeds 数组。空的签名者数组表示不需要任何 PDA 进行签名。
