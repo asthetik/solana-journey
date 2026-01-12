@@ -60,11 +60,11 @@ graph TD
 
 Solana 生态系统有两个主要的 Token Program。
 
-- Token Program (原始版本)
+- **Token Program** (原始版本)
   - 基本代币功能（铸造、转移等）
   - 不可变且广泛使用
 
-- Token Extension Program (Token 2022)
+- **Token Extension Program** (Token 2022)
   - 包含所有原始 Token Program 功能
   - 通过 “扩展” 添加功能
 
