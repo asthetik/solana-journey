@@ -420,7 +420,7 @@ Sysvar 账户存在于预定义的地址，并提供对集群状态数据的访�
 
 下图展示了交易和指令如何协同工作，使用户能够与网络交互。在此示例中，SOL 从一个账户转移到另一个账户。
 
-发送方账户的**元数据**表明它必须为交易签名。（这允许系统程序扣除lamports。）发送方和接收方账户都必须是可写的，以便其 lamport 余额发生变化。为了执行此指令，发送方的钱包发送包含其 签名 和包含 SOL 转账指令的消息的交易。
+发送方账户的**元数据**表明它必须为交易签名。（这允许系统程序扣除lamports。）发送方和接收方账户都必须是可写的，以便其 lamport 余额发生变化。为了执行此指令，发送方的钱包发送包含其** 签名**` 和包含 **SOL 转账指令**的消息的交易。
 
 ![SOL 转账图示](../images/sol-transfer.svg)
 
@@ -787,7 +787,7 @@ Priority = (Prioritization fee + Base fee) / (1 + CU limit + Signature CUs + Wri
 
 ## 程序 (program)
 
-在 Solana 上，智能合约被称为 program。program 是一种无状态的 账户，其中包含可执行代码。这些代码被组织为称为 instruction 的函数。用户通过发送包含一个或多个 instruction 的 交易 与 program 进行交互。一次交易可以包含来自多个 program 的 instruction。
+在 Solana 上，智能合约被称为 program。program 是一种无状态的**账户**，仅包含可执行代码（逻辑），不存储持久数据。用户通过发送包含一个或多个 instruction 的交易与 program 进行交互。一次交易可以包含来自多个 program 的 instruction。
 
 当程序被部署时，Solana 使用 LLVM 将其编译为可执行和链接格式 (ELF)。ELF 文件包含以 Solana 字节码格式（sBPF）编写的程序二进制文件，并存储在链上的可执行账户中。
 
