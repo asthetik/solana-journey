@@ -2,7 +2,7 @@
 
 在区块链（尤其是 Solana）的语境下，**代币（Token）** 的本质是**由程序管理的一段账目记录**。
 
-代币是代表多种资产类别所有权的数字资产。代币化使得产权的数字化成为可能。在 Solana 上，代币统称为 **SPL Token**（符合 Solana Program Library 标准的代币）。与以太坊不同，Solana 的代币并不是写在每个人的钱包地址里的，而是通过一套**账户组合**来管理的。
+代币是代表多种资产类别所有权的数字资产。代币化使得产权的数字化成为可能。在 Solana 上，代币统称为 **SPL(Solana Program Library) Token**。与以太坊不同，Solana 的代币并不是写在每个人的钱包地址里的，而是通过一套**账户组合**来管理的。
 
 要理解代币，必须分清这四个核心概念：
 
@@ -50,7 +50,7 @@ graph TD
 
 ### 非同质化代币 (NFTs)
 
-- **特点**：每一枚都是独一无二的，通常不可分割（供应量为 1，小数位为 0）。
+- **特点**：每一枚都是独一无二的，通常不可分割（供应量为 1，小数精度为 0）。
 - **例子**：数字艺术品、游戏里的独特装备、链上身份域名。
 - **类比**：就像是一张编号唯一的演唱会门票，或者一张全球限量的球星卡。
 
@@ -68,7 +68,7 @@ Solana 生态系统有两个主要的 Token Program。
   - 包含所有原始 Token Program 功能
   - 通过 “扩展” 添加功能
 
-Token Program 包含与网络上的代币（包括同质化和非同质化代币）交互的所有指令逻辑。Solana 上的所有代币实际上都是由 Token Program 拥有的 数据账户。
+Token Program 包含与网络上的代币（包括同质化和非同质化代币）交互的所有指令逻辑。Solana 上的所有代币实际上都是由 Token Program 拥有的**数据账户**。
 
 ![Token Program](../images/token-program.svg)
 
@@ -76,10 +76,10 @@ Token Program 包含与网络上的代币（包括同质化和非同质化代币
 
 Solana 上的代币通过由 Token Program 拥有的 Mint Account 的地址唯一标识。此账户充当特定代币的全局计数器，并存储以下数据：
 
-- **供应量**：代币的总供应量
-- **小数位数**：代币的小数精度
-- **铸造权限**：被授权创建新代币单位的账户，增加供应量
-- **冻结权限**：被授权冻结代币的账户，防止代币在 Token Account 中被转移或销毁
+- **Supply 供应量**：代币的总供应量
+- **Decimals 小数位数**：代币的小数精度
+- **Mint authority 铸造权限**：有权铸造新代币、增加总供应量的账户
+- **Freeze authority 冻结权限**：有权冻结 Token Account 中代币、阻止其转账或销毁的账户
 
 ![铸造账户](../images/mint-account.svg)
 
@@ -107,11 +107,11 @@ pub struct Mint {
 
 ## Token Account
 
-Token Program 创建了 Token Accounts 来跟踪每个代币单位的个人所有权。Token Account 存储的数据包括：
+Token Program 会创建 Token Account，用于追踪每个代币单位的个人持有情况。token account 会存储如下数据：
 
-- **铸造**：Token Account 持有的代币
-- **所有者**：被授权从 Token Account 转移代币的账户
-- **数量**：Token Account 当前持有的代币数量
+- **Mint 铸造**：该 Token Account 持有的代币
+- **Owner 所有者**：有权从该 token account 转移代币的账户
+- **Amout 数量**：该 token account 当前持有的代币数量
 
 ![Token Account](../images/token-account.svg)
 
@@ -142,7 +142,7 @@ pub struct Account {
 }
 ```
 
-一个钱包需要为其想要持有的每种代币（铸造）创建一个 token account，并将钱包地址设置为 token account 的所有者。每个钱包可以为同一种代币（铸造）拥有多个 token account，但一个 token account 只能有一个所有者，并且只能持有一种代币（铸造）。
+每个钱包想要持有某个代币（mint）时，都需要一个对应的 token account，并将钱包地址设置为 token account 的 owner。每个钱包可以拥有多个相同代币（mint）的 token account，但每个 token account 只能有一个 owner，并且只能持有一种代币（mint）。
 
 ![账户关系](../images/token-account-relationship.svg)
 
@@ -154,9 +154,9 @@ pub struct Account {
 
 ## Associated Token Account
 
-Associated Token Account (关联代币账户, ATA) 简化了为特定铸造和所有者查找 token account 地址的过程。可以将 Associated Token Account 视为特定铸造和所有者的“默认” token account。
+Associated Token Account 简化了查找特定 mint 和所有者的 token account 地址的流程。你可以将 Associated Token Account 理解为某个 mint 和所有者的“默认” token account。
 
-关联代币账户是通过所有者地址和铸币账户地址派生出的地址创建的。需要注意的是，关联代币账户只是一个具有特定地址的代币账户。
+Associated Token Account 是通过从所有者地址和 mint account 地址派生出的地址创建的。需要注意的是，Associated Token Account 其实就是一个具有特定地址的 token account。
 
 这引入了 Solana 开发中的一个关键概念：程序派生地址 (PDA)。PDA 使用预定义的输入确定性地派生出一个地址，使得查找账户地址变得简单。
 
