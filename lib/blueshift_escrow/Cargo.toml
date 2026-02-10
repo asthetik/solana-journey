@@ -1,0 +1,14 @@
+[package]
+name = "blueshift_escrow"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+pinocchio = "0.10.2"
+pinocchio-associated-token-account = "0.3.0"
+pinocchio-system = "0.5.0"
+pinocchio-token = "0.5.0"
+solana-address = { version = "2.0", features = ["sha2", "syscalls", "curve25519"] }
