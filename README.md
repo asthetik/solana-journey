@@ -1,3 +1,5 @@
+
+
 # Solana Journey
 
 From zero to one — learning Solana in public
@@ -25,6 +27,12 @@ The code and notes may be imperfect, but they reflect real progress.
 
 ```text
 .
+├── lib/                    # Smart contract projects & experiments
+│   ├── blueshift_anchor_escrow/
+│   ├── blueshift_anchor_vault/
+│   ├── blueshift_escrow/
+│   ├── blueshift_vault/
+│   └── pinocchio_amm/
 ├── notes/                  # Core learning notes directory
 │   ├── blockchain.md       # Blockchain fundamentals
 │   ├── notes.md            # System theory notes
@@ -35,4 +43,3 @@ The code and notes may be imperfect, but they reflect real progress.
 ├── Q&A.md                  # Questions and Answers
 └── README.md               # Project introduction
 ```
-
